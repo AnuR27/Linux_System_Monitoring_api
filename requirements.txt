@@ -1,0 +1,8 @@
+# Application dependencies
+fastapi
+uvicorn
+pydantic
+psutil
+
+# Development and testing
+pytest

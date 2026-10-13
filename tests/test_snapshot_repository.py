@@ -1,0 +1,35 @@
+from app.models.snapshot import Snapshot
+from app.repository.snapshot_repository import SnapshotRepository
+
+
+def make_snapshot() -> Snapshot:
+    return Snapshot(
+        cycle_id=0,
+        timestamp="2026-10-13T10:00:00",
+        cpu_percent=25.0,
+        memory_percent=50.0,
+        disk_percent=60.0,
+        process_count=100,
+        status="SUCCESS",
+        severity="LOW",
+        collection_time_ms=12.5,
+    )
+
+
+def test_latest_snapshot_is_none_when_repository_is_empty():
+    repository = SnapshotRepository()
+
+    assert repository.get_latest_snapshot() is None
+
+
+def test_latest_snapshot_returns_most_recent_saved_snapshot():
+    repository = SnapshotRepository()
+
+    first = repository.save_snapshot(make_snapshot())
+    second = repository.save_snapshot(make_snapshot())
+
+    latest = repository.get_latest_snapshot()
+
+    assert latest is second
+    assert latest.cycle_id == 2
+    assert first.cycle_id == 1
