@@ -1,9 +1,9 @@
+
 from pydantic import BaseModel
 from datetime import datetime
 
 
-class Snapshot(BaseModel):
-    cycle_id: int
+class SnapshotDraft(BaseModel):
     timestamp: datetime
 
     cpu_percent: float | None = None
@@ -15,3 +15,7 @@ class Snapshot(BaseModel):
     severity: str
 
     collection_time_ms: float | None = None
+
+
+class Snapshot(SnapshotDraft):
+    cycle_id: int

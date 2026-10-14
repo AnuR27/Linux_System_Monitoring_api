@@ -1,10 +1,9 @@
-from app.models.snapshot import Snapshot
+from app.models.snapshot import SnapshotDraft
 from app.repository.snapshot_repository import SnapshotRepository
 
 
-def make_snapshot() -> Snapshot:
-    return Snapshot(
-        cycle_id=0,
+def make_snapshot() -> SnapshotDraft:
+    return SnapshotDraft(
         timestamp="2026-10-13T10:00:00",
         cpu_percent=25.0,
         memory_percent=50.0,
@@ -33,3 +32,13 @@ def test_latest_snapshot_returns_most_recent_saved_snapshot():
     assert latest is second
     assert latest.cycle_id == 2
     assert first.cycle_id == 1
+
+def test_saving_snapshot_assigns_id_without_modifying_draft():
+    repository = SnapshotRepository()
+    draft = make_snapshot()
+
+    saved = repository.save_snapshot(draft)
+
+    assert saved.cycle_id == 1
+    assert not hasattr(draft, "cycle_id")
+    assert saved is not draft

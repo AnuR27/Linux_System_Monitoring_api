@@ -1,5 +1,5 @@
 from app.models.raw_metrics import RawMetrics
-from app.models.snapshot import Snapshot
+from app.models.snapshot import SnapshotDraft
 
 class MetricsService:
     def compute_status(self, raw: RawMetrics) -> str:
@@ -16,14 +16,21 @@ class MetricsService:
             return "FAILED"
         return "PARTIAL"
 
-    def compute_severity(self, raw:RawMetrics, status:str) -> str:
-        if status == "FAILED":
-            return "HIGH"
-        if len(raw.collection_errors) > 0:
-            return "MEDIUM"
-        if status == "PARTIAL":
-            return "MEDIUM"
-        return "LOW"
+
+    def compute_severity(self, raw: RawMetrics) -> str:
+        # CPU and memory are required to assess host health.
+        if raw.cpu_percent is None or raw.memory_percent is None:
+            return "UNKNOWN"
+
+        # Critical takes priority over warning.
+        if raw.cpu_percent >= 95 or raw.memory_percent >= 95:
+            return "CRITICAL"
+
+        if raw.cpu_percent >= 80 or raw.memory_percent >= 80:
+            return "WARNING"
+
+        return "HEALTHY"
+
 
     def generate_errors(self, raw:RawMetrics) -> list[str]:
         errors = list(raw.collection_errors)
@@ -37,21 +44,23 @@ class MetricsService:
             errors.append("PROCESS_COUNT_MISSING")
         return errors
 
-    def build_snapshot(self, raw:RawMetrics, cycle_id:int) -> Snapshot:
+
+    def build_snapshot(self, raw: RawMetrics) -> SnapshotDraft:
         status = self.compute_status(raw)
-        severity = self.compute_severity(raw, status)
-        return Snapshot(
-            cycle_id = cycle_id,
-            timestamp = raw.timestamp,
-            cpu_percent = raw.cpu_percent,
-            memory_percent = raw.memory_percent,
-            disk_percent = raw.disk_percent,
-            process_count = raw.process_count,
-            status = status,
-            severity = severity,
-            collection_time_ms = raw.collection_time_ms
-            )
-    def process(self, raw:RawMetrics, cycle_id:int) -> tuple[Snapshot, list[str]]:
-        snapshot = self.build_snapshot(raw, cycle_id)
+        severity = self.compute_severity(raw)
+
+        return SnapshotDraft(
+            timestamp=raw.timestamp,
+            cpu_percent=raw.cpu_percent,
+            memory_percent=raw.memory_percent,
+            disk_percent=raw.disk_percent,
+            process_count=raw.process_count,
+            status=status,
+            severity=severity,
+            collection_time_ms=raw.collection_time_ms,
+        )
+
+    def process(self, raw: RawMetrics) -> tuple[SnapshotDraft, list[str]]:
+        snapshot = self.build_snapshot(raw)
         errors = self.generate_errors(raw)
         return snapshot, errors

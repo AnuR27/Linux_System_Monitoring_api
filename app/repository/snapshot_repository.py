@@ -1,4 +1,4 @@
-from app.models.snapshot import Snapshot
+from app.models.snapshot import Snapshot, SnapshotDraft
 
 class SnapshotRepository:
     def __init__(self):
@@ -6,13 +6,21 @@ class SnapshotRepository:
         self.cycle_order: list[int] = []
         self._next_cycle_id: int = 1
 
-    def save_snapshot(self, snapshot: Snapshot) -> Snapshot:
+
+    def save_snapshot(self, snapshot: SnapshotDraft) -> Snapshot:
         cycle_id = self._next_cycle_id
         self._next_cycle_id += 1
-        snapshot.cycle_id = cycle_id
-        self.snapshots_by_cycle[cycle_id] = snapshot
+
+        saved_snapshot = Snapshot(
+            cycle_id=cycle_id,
+            **snapshot.model_dump(),
+        )
+
+        self.snapshots_by_cycle[cycle_id] = saved_snapshot
         self.cycle_order.append(cycle_id)
-        return snapshot
+
+        return saved_snapshot
+
 
     def get_latest_snapshot(self) -> Snapshot | None:
         if not self.cycle_order:
