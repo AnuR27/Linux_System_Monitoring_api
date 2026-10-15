@@ -6,3 +6,4 @@ psutil
 
 # Development and testing
 pytest
+httpx2
