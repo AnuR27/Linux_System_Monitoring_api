@@ -1,9 +1,15 @@
-# Application dependencies
+# API
 fastapi
 uvicorn
+
+# Validation and system monitoring
 pydantic
 psutil
 
+# Database
+sqlalchemy
+psycopg[binary]
+
 # Development and testing
 pytest
-httpx2
+httpx

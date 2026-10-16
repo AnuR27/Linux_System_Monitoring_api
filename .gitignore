@@ -19,3 +19,15 @@ htmlcov/
 
 # Environment secrets
 .env
+
+#Local environment files
+.env.*
+!.env.example
+
+# Build and distribution artifacts
+build/
+dist/
+
+# IDE settings
+.vscode/
+.idea/

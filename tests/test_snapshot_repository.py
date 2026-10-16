@@ -42,3 +42,20 @@ def test_saving_snapshot_assigns_id_without_modifying_draft():
     assert saved.cycle_id == 1
     assert not hasattr(draft, "cycle_id")
     assert saved is not draft
+
+def test_get_recent_snapshots_returns_newest_first():
+    repository = SnapshotRepository()
+
+    first = repository.save_snapshot(make_snapshot())
+    second = repository.save_snapshot(make_snapshot())
+    third = repository.save_snapshot(make_snapshot())
+
+    recent = repository.get_recent_snapshots(limit=2)
+
+    assert recent == [third, second]
+    assert first not in recent
+
+def test_get_recent_snapshots_returns_empty_list_when_repository_is_empty():
+    repository = SnapshotRepository()
+
+    assert repository.get_recent_snapshots() == []

@@ -28,3 +28,12 @@ class SnapshotRepository:
 
         latest_cycle_id = self.cycle_order[-1]
         return self.snapshots_by_cycle[latest_cycle_id]
+
+    def get_recent_snapshots(self, limit: int=10) -> list[Snapshot]:
+        recent_cycle_ids = self.cycle_order[-limit:]
+        recent_cycle_ids.reverse()
+
+        return [
+            self.snapshots_by_cycle[cycle_id]
+            for cycle_id in recent_cycle_ids
+            ]

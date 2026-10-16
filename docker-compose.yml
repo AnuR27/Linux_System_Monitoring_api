@@ -1,0 +1,35 @@
+
+services:
+  db:
+    image: postgres:16
+    container_name: monitoring-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: monitoring
+      POSTGRES_USER: monitoring
+      POSTGRES_PASSWORD: monitoring_dev_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U monitoring -d monitoring"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: monitoring-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://monitoring:monitoring_dev_password@db:5432/monitoring
+      MONITORING_INTERVAL_SECONDS: "30"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
